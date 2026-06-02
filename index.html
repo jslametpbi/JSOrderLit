@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JSOrderLit Manager</title>
+  <meta name="description" content="Professional article project order, invoice, and receipt management system by Dr. Joko Slamet." />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:#f1f5f9; color:#0f172a; }
+    button, input, select, textarea { font: inherit; }
+    .app { display:flex; min-height:100vh; }
+    .sidebar { width:280px; background:#020617; color:#fff; padding:24px; position:sticky; top:0; height:100vh; }
+    .brand { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+    .logo { width:46px; height:46px; border-radius:18px; background:#fff; color:#020617; display:flex; align-items:center; justify-content:center; font-weight:900; }
+    .brand h1 { margin:0; font-size:20px; }
+    .brand p { margin:2px 0 0; color:#94a3b8; font-size:12px; }
+    .nav button { width:100%; display:flex; align-items:center; gap:10px; padding:13px 15px; border:0; border-radius:18px; background:transparent; color:#cbd5e1; cursor:pointer; font-weight:700; margin-bottom:8px; text-align:left; }
+    .nav button.active { background:#fff; color:#020617; }
+    .profile { margin-top:26px; background:#0f172a; border:1px solid #1e293b; padding:16px; border-radius:20px; }
+    .profile p { margin:3px 0; color:#94a3b8; font-size:12px; }
+    .profile strong { color:#fff; }
+    .main { flex:1; padding:30px; max-width:1500px; margin:0 auto; }
+    .topbar { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; margin-bottom:22px; }
+    .pill { display:inline-flex; gap:8px; align-items:center; background:#fff; border:1px solid #e2e8f0; border-radius:999px; padding:9px 14px; color:#475569; font-size:13px; box-shadow:0 1px 2px rgba(15,23,42,.04); }
+    h2.page { font-size:38px; margin:12px 0 6px; letter-spacing:-.04em; }
+    .subtitle { margin:0; color:#64748b; max-width:850px; line-height:1.5; }
+    .actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end; }
+    .btn { border:0; background:#0f172a; color:#fff; padding:11px 16px; border-radius:16px; cursor:pointer; font-weight:800; display:inline-flex; gap:8px; align-items:center; }
+    .btn.secondary { background:#fff; color:#0f172a; border:1px solid #e2e8f0; }
+    .btn.danger { background:#fee2e2; color:#b91c1c; }
+    .btn.small { padding:8px 10px; border-radius:12px; font-size:13px; }
+    .grid4 { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; margin-bottom:22px; }
+    .card { background:#fff; border:1px solid #e2e8f0; border-radius:24px; box-shadow:0 1px 2px rgba(15,23,42,.04); }
+    .card.pad { padding:22px; }
+    .stat p { margin:0; color:#64748b; font-size:13px; }
+    .stat h3 { margin:6px 0 4px; font-size:25px; }
+    .stat small { color:#94a3b8; }
+    .toolbar { display:grid; grid-template-columns:2fr 1fr 1fr; gap:14px; padding:18px; margin-bottom:20px; }
+    input, select, textarea { width:100%; border:1px solid #e2e8f0; border-radius:16px; padding:12px 14px; outline:none; background:#fff; color:#0f172a; }
+    textarea { min-height:96px; resize:vertical; }
+    input:focus, select:focus, textarea:focus { border-color:#475569; box-shadow:0 0 0 3px rgba(71,85,105,.12); }
+    .table-wrap { overflow:auto; }
+    table { width:100%; border-collapse:collapse; font-size:14px; }
+    th { text-align:left; background:#f8fafc; color:#475569; padding:15px; white-space:nowrap; font-weight:900; }
+    td { padding:15px; border-top:1px solid #f1f5f9; vertical-align:top; color:#334155; }
+    tr:hover td { background:#f8fafc; }
+    .badge { display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:900; border:1px solid #e2e8f0; background:#f8fafc; }
+    .badge.green { color:#047857; background:#ecfdf5; border-color:#a7f3d0; }
+    .badge.red { color:#b91c1c; background:#fef2f2; border-color:#fecaca; }
+    .badge.amber { color:#b45309; background:#fffbeb; border-color:#fde68a; }
+    .badge.blue { color:#1d4ed8; background:#eff6ff; border-color:#bfdbfe; }
+    .empty { border:1px dashed #cbd5e1; background:#f8fafc; border-radius:22px; padding:54px 20px; text-align:center; color:#64748b; }
+    .empty strong { display:block; color:#0f172a; font-size:18px; margin-bottom:6px; }
+    .drawer-bg { position:fixed; inset:0; background:rgba(2,6,23,.48); display:none; justify-content:flex-end; z-index:50; }
+    .drawer-bg.show { display:flex; }
+    .drawer { width:min(720px, 100%); background:#fff; min-height:100vh; overflow:auto; }
+    .drawer-head { position:sticky; top:0; background:#fff; border-bottom:1px solid #e2e8f0; padding:20px; display:flex; justify-content:space-between; align-items:center; z-index:2; }
+    .drawer-head h3 { margin:0; font-size:22px; }
+    .drawer-head p { margin:4px 0 0; color:#64748b; font-size:13px; }
+    .drawer-body { padding:20px; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .span2 { grid-column:span 2; }
+    .doc { position:relative; background:#fff; border:1px solid #e2e8f0; border-radius:22px; padding:26px; overflow:hidden; }
+    .doc-head { display:flex; justify-content:space-between; border-bottom:1px solid #e2e8f0; padding-bottom:18px; margin-bottom:18px; }
+    .doc-title { font-size:32px; font-weight:950; }
+    .note { color:#64748b; font-size:13px; line-height:1.5; }
+    .stamp-wrap { position:absolute; right:26px; bottom:92px; }
+    .stamp { width:128px; height:128px; border-radius:999px; border:5px double #0f766e; color:#0f766e; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:900; transform:rotate(-14deg); opacity:.92; background:rgba(255,255,255,.88); box-shadow:0 8px 24px rgba(15,23,42,.06); text-align:center; }
+    .stamp.red { border-color:#b91c1c; color:#b91c1c; }
+    .stamp small { display:block; font-size:10px; letter-spacing:.16em; text-transform:uppercase; }
+    .stamp strong { display:block; font-size:24px; line-height:1; margin:4px 0; }
+    .stamp span { display:block; font-size:9px; letter-spacing:.1em; text-transform:uppercase; max-width:90px; }
+    .watermark { position:absolute; inset:auto; top:42%; left:50%; transform:translate(-50%,-50%) rotate(-24deg); font-size:72px; font-weight:900; letter-spacing:.18em; color:rgba(15,23,42,.05); pointer-events:none; white-space:nowrap; user-select:none; }
+    .doc-meta-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; padding:14px 16px; }
+    .footer-note { margin-top:22px; padding:15px; background:#fffbeb; border:1px solid #fde68a; color:#92400e; border-radius:18px; font-size:13px; }
+    .logo-print { width:54px; height:54px; border-radius:18px; background:#0f172a; color:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900; }
+    .header-flex { display:flex; align-items:center; gap:14px; }
+    .sig-img { width:180px; height:64px; object-fit:contain; display:block; margin-left:auto; }
+    .a4-doc { width:794px; min-height:1123px; margin:0 auto; padding:0; background:#fff; }
+    .formal-top { height:16px; background:linear-gradient(90deg,#0f172a 0%,#1d4ed8 58%,#f59e0b 58%,#f59e0b 100%); margin:-26px -26px 24px; }
+    .formal-ribbon { display:inline-block; padding:7px 13px; border-radius:999px; background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; font-size:11px; font-weight:900; letter-spacing:.1em; text-transform:uppercase; }
+    .logo-img { width:62px; height:62px; border-radius:18px; object-fit:cover; border:1px solid #dbeafe; background:#fff; }
+    .doc-table { border:1px solid #dbeafe; border-radius:16px; overflow:hidden; }
+    .doc-table th { background:#0f172a; color:#fff; }
+    .doc-table tfoot td { background:#eff6ff; color:#0f172a; font-size:16px; }
+    .gold-line { height:3px; width:100%; background:linear-gradient(90deg,#1d4ed8,#f59e0b); margin:14px 0; border-radius:999px; }
+    .formal-footer { position:absolute; left:26px; right:26px; bottom:22px; border-top:1px solid #e2e8f0; padding-top:10px; display:flex; justify-content:space-between; gap:20px; color:#64748b; font-size:11px; }
+    .bank-box { margin-top:18px; padding:14px 16px; border:1px solid #e2e8f0; background:#f8fafc; border-radius:18px; }
+    .contact-line { margin-top:6px; color:#475569; font-size:13px; }
+    .mini-label { font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:.08em; font-weight:800; }
+
+    @media (max-width: 980px) {
+      .app { display:block; }
+      .sidebar { width:auto; height:auto; position:relative; }
+      .nav { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+      .grid4 { grid-template-columns:1fr 1fr; }
+      .toolbar { grid-template-columns:1fr; }
+      .topbar { flex-direction:column; }
+    }
+    @media (max-width: 640px) {
+      .main { padding:18px; }
+      .grid4 { grid-template-columns:1fr; }
+      .form-grid { grid-template-columns:1fr; }
+      .span2 { grid-column:span 1; }
+      h2.page { font-size:30px; }
+    }
+    @media print {
+      body * { visibility:hidden; }
+      #printArea, #printArea * { visibility:visible; }
+      #printArea { position:absolute; left:0; top:0; width:100%; padding:20px; }
+      .no-print { display:none !important; }
+    }
+  
+    .approval-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:22px; align-items:end; }
+    .approval-box { display:flex; justify-content:flex-end; align-items:flex-end; }
+    .signature-stamp-wrap { position:relative; width:300px; min-height:150px; margin-left:auto; }
+    .signature-stamp-wrap .stamp { position:absolute; left:0; bottom:18px; z-index:3; }
+    .signature-stamp-wrap .signature-panel { position:absolute; right:0; bottom:0; z-index:2; width:250px; text-align:right; }
+    .sig-img { width:235px !important; height:92px !important; object-fit:contain; display:block; margin-left:auto; filter:contrast(1.25) saturate(1.1); }
+    .signature-name { border-top:1.6px solid #0f172a; display:inline-block; min-width:230px; padding-top:7px; margin-top:0; font-weight:900; color:#0f172a; text-align:center; }
+    .stamp { width:118px !important; height:118px !important; border:4px double #1d4ed8; border-radius:999px; color:#1d4ed8; transform:rotate(-8deg); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; background:rgba(255,255,255,.72); font-weight:950; letter-spacing:.04em; }
+    .stamp.red { border-color:#dc2626; color:#dc2626; }
+    .stamp small { font-size:10px; text-transform:uppercase; }
+    .stamp strong { font-size:21px; line-height:1; margin:4px 0; }
+    .stamp span { font-size:10px; }
+    .stamp-wrap { display:none !important; }
+    .drawer-bg { pointer-events:auto !important; }
+    .drawer { pointer-events:auto !important; }
+    button, .btn, .nav button { pointer-events:auto !important; cursor:pointer; }
+    .brand p { max-width:220px; }
+
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const APP_VERSION = "2026-06-02-jsorderlit-smooth-final";
+
+const defaultBusiness = {
+  _version: APP_VERSION,
+  logoText: "JS",
+  businessName: "JSOrderLit Manager",
+  headerTagline: "Professional Project Management",
+  ownerName: "Dr. Joko Slamet",
+  bankName: "BCA",
+  accountNumber: "0183188531",
+  accountHolder: "Joko Slamet",
+  bankName2: "Mandiri",
+  accountNumber2: "1410025957408",
+  accountHolder2: "Joko Slamet",
+  whatsapp: "+6282338202233",
+  address: "",
+  email: "jokoslamet@cwcu.ac.id",
+  signatureName: "Dr. Joko Slamet",
+  currency: "IDR",
+  logoImage: "",
+  signatureImage: "data:image/png;base64,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",
+  dueSoonDays: "7"
+};
+
+const savedBusinessRaw = JSON.parse(localStorage.getItem("js_business") || "null");
+const savedBusiness = savedBusinessRaw && savedBusinessRaw._version === APP_VERSION ? savedBusinessRaw : null;
+
+const state = {
+  active: localStorage.getItem("js_active") || "Dashboard",
+  projects: JSON.parse(localStorage.getItem("js_projects") || "[]"),
+  invoices: JSON.parse(localStorage.getItem("js_invoices") || "[]"),
+  receipts: JSON.parse(localStorage.getItem("js_receipts") || "[]"),
+  business: Object.assign({}, defaultBusiness, savedBusiness || {}),
+  query: "",
+  statusFilter: "All",
+  journalFilter: "All",
+  drawer: null,
+  editItem: null,
+  preview: null
+};
+
+const journalTypes = ["Scopus Q1","Scopus Q2","Scopus Q3","Scopus Q4","Non Scopus"];
+const projectStatuses = ["Draft","Submitted","Under Review","Revision","Rejected","Resubmit","Accepted","Published","Completed"];
+const invoiceStatuses = ["Draft","Issued","Partially Paid","Paid","Overdue","Cancelled"];
+const paymentTerms = ["Full","50%","Installment","Custom","Unpaid"];
+const receiptMethods = ["Bank Transfer","Cash","E-Wallet","Virtual Account","Other"];
+
+
+state.projects = (state.projects || []).map(p => ensureProjectDefaults(p));
+state.business = Object.assign({}, state.business, {
+  headerTagline: "Professional Project Management",
+  signatureImage: defaultBusiness.signatureImage || state.business.signatureImage
+});
+
+function save() {
+  localStorage.setItem("js_projects", JSON.stringify(state.projects));
+  localStorage.setItem("js_invoices", JSON.stringify(state.invoices));
+  localStorage.setItem("js_receipts", JSON.stringify(state.receipts));
+  localStorage.setItem("js_business", JSON.stringify(state.business));
+  localStorage.setItem("js_active", state.active);
+}
+function activeCurrency() { return (state.business && state.business.currency) || "IDR"; }
+function currencyLocale(currency) {
+  return currency === "USD" ? "en-US" : currency === "EUR" ? "de-DE" : currency === "GBP" ? "en-GB" : currency === "MYR" ? "ms-MY" : currency === "SGD" ? "en-SG" : "id-ID";
+}
+function money(v) {
+  const currency = activeCurrency();
+  const noDecimal = ["IDR","JPY"].includes(currency);
+  return new Intl.NumberFormat(currencyLocale(currency), {style:"currency",currency,maximumFractionDigits:noDecimal?0:2}).format(Number(v||0));
+}
+function daysUntil(dateStr) {
+  if(!dateStr) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = new Date(dateStr + "T00:00:00");
+  if(isNaN(d.getTime())) return null;
+  return Math.ceil((d - today) / 86400000);
+}
+function dueBadge(dateStr, status) {
+  const d = daysUntil(dateStr);
+  if(status === "Paid" || status === "Cancelled") return "";
+  if(d === null) return "";
+  const limit = Number((state.business && state.business.dueSoonDays) || 7);
+  if(d < 0) return `<span class="badge red">Overdue ${Math.abs(d)} day(s)</span>`;
+  if(d === 0) return `<span class="badge red">Due today</span>`;
+  if(d <= limit) return `<span class="badge amber">Due in ${d} day(s)</span>`;
+  return `<span class="badge blue">Due in ${d} day(s)</span>`;
+}
+function nextSerialId(prefix, list, digits=3) {
+  const year = new Date().getFullYear();
+  const regex = new RegExp(`^${prefix}-${year}-(\\d+)$`);
+  let max = 0;
+  list.forEach(item => {
+    const raw = item && item.id ? String(item.id) : "";
+    const m = raw.match(regex);
+    if (m) max = Math.max(max, Number(m[1] || 0));
+  });
+  return `${prefix}-${year}-${String(max + 1).padStart(digits, "0")}`;
+}
+function id(prefix, arr) { return `${prefix}-${new Date().getFullYear()}-${String(arr.length+1).padStart(4,"0")}`; }
+function invoiceId() { return nextSerialId("INV", state.invoices, 3); }
+function receiptId() { return nextSerialId("RCP", state.receipts, 3); }
+function signatureData(name) {
+  const safe = String(name || "").replace(/[<>&"']/g, "");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="360" height="120" viewBox="0 0 360 120"><rect width="100%" height="100%" fill="white" fill-opacity="0"/><text x="180" y="72" text-anchor="middle" font-family="Brush Script MT, Segoe Script, cursive" font-size="40" fill="#0f172a">${safe}</text><path d="M70 86 C120 95, 235 95, 290 86" stroke="#94a3b8" stroke-width="2" fill="none"/></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+const projectCategories = [
+  "Journal Article",
+  "Research Article",
+  "Book Chapter",
+  "Conference Paper",
+  "Proofreading",
+  "Language Editing",
+  "Substantive Editing",
+  "Translation",
+  "Paraphrasing",
+  "Reference Formatting",
+  "Similarity Reduction",
+  "Manuscript Formatting",
+  "Journal Submission Assistance",
+  "Revision Response",
+  "Thesis/Skripsi Editing",
+  "Dissertation Editing",
+  "Research Proposal",
+  "Other Academic Project"
+];
+
+function normalizeAuthors(value){
+  if(Array.isArray(value)) return value.map(a => String(a || "").trim()).filter(Boolean);
+  return String(value || "").split(/[,;]+/).map(a => a.trim()).filter(Boolean);
+}
+function authorsText(value){
+  const arr = normalizeAuthors(value);
+  return arr.length ? arr.join("; ") : "-";
+}
+function ensureProjectDefaults(p){
+  p.projectCategory = p.projectCategory || p.category || "Journal Article";
+  p.authors = normalizeAuthors(p.authors);
+  p.price = Number(p.price || 0);
+  return p;
+}
+function projectOrderId(dateStr){
+  const d = dateStr ? new Date(dateStr + "T00:00:00") : new Date();
+  const month = d.getMonth() + 1;
+  const year = d.getFullYear();
+  const prefix = `JS-ORD-${month}-${year}-`;
+  const existing = (state.projects || [])
+    .map(p => String(p.id || ""))
+    .filter(id => id.startsWith(prefix))
+    .map(id => Number(id.split("-").pop()))
+    .filter(n => !isNaN(n));
+  const next = existing.length ? Math.max(...existing) + 1 : 1;
+  return `${prefix}${String(next).padStart(4, "0")}`;
+}
+function refreshProjectIdByDate(input){
+  const form = input.form;
+  if(!form || !form.id) return;
+  const current = String(form.id.value || "");
+  if(!current || /^JS-ORD-\d{1,2}-\d{4}-\d{4}$/.test(current)){
+    form.id.value = projectOrderId(input.value);
+  }
+}
+function go(page){
+  state.active = page;
+  state.drawer = null;
+  state.editItem = null;
+  state.preview = null;
+  save();
+  render();
+}
+
+function logoData(textLogo) {
+  const safe = String(textLogo || "JS").replace(/[<>&"']/g, "");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0f172a"/><stop offset="58%" stop-color="#1d4ed8"/><stop offset="100%" stop-color="#f59e0b"/></linearGradient></defs><rect width="256" height="256" rx="56" fill="url(#g)"/><circle cx="128" cy="128" r="83" fill="white" fill-opacity=".95"/><text x="128" y="145" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="900" fill="#0f172a">${safe}</text><text x="128" y="182" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#1d4ed8">ORDERLIT</text></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+function badge(status) {
+  let cls = "badge";
+  if(["Accepted","Published","Completed","Paid"].includes(status)) cls += " green";
+  else if(["Rejected","Overdue","Cancelled"].includes(status)) cls += " red";
+  else if(["Under Review","Revision","Partially Paid"].includes(status)) cls += " amber";
+  else if(["Submitted","Issued"].includes(status)) cls += " blue";
+  return `<span class="${cls}">${esc(status)}</span>`;
+}
+function csvEscape(v) { v = String(v ?? ""); return /[",\n]/.test(v) ? `"${v.replace(/"/g,'""')}"` : v; }
+function exportCSV(name, rows) {
+  if(!rows.length) { alert("No data to export."); return; }
+  const headers = Object.keys(rows[0]);
+  const csv = [headers.join(","), ...rows.map(r => headers.map(h => csvEscape(Array.isArray(r[h]) ? r[h].join("; ") : r[h])).join(","))].join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url);
+}
+function setActive(x){ state.active=x; save(); render(); }
+function openDrawer(type, item=null){ state.drawer=type; state.editItem=item; render(); }
+
+function openNewProject(){
+  state.drawer = "project";
+  state.editItem = null;
+  state.preview = null;
+  render();
+}
+function openNewInvoice(){
+  state.drawer = "invoice";
+  state.editItem = null;
+  state.preview = null;
+  render();
+}
+function openNewReceipt(){
+  state.drawer = "receipt";
+  state.editItem = null;
+  state.preview = null;
+  render();
+}
+
+function closeDrawer(){ state.drawer=null; state.editItem=null; render(); }
+function openPreview(type,item){ state.preview={type,item}; render(); }
+function closePreview(){ state.preview=null; render(); }
+function removeItem(kind, idv){
+  if(!confirm("Delete this data?")) return;
+  state[kind] = state[kind].filter(x => x.id !== idv);
+  save(); render();
+}
+
+function stats(){
+  const totalProject = state.projects.reduce((s,p)=>s+Number(p.price||0),0);
+  const invoiced = state.invoices.reduce((s,i)=>s+Number(i.total||0),0);
+  const paid = state.receipts.reduce((s,r)=>s+Number(r.amount||0),0);
+  return {totalProject, invoiced, paid, outstanding: invoiced-paid};
+}
+function filterProjects(){
+  const q=state.query.toLowerCase();
+  return state.projects.filter(p => {
+    const text=[p.id,p.title,p.leadOrder,p.correspondingAuthor,p.targetJournal,p.journal,p.journalType,p.scopusCategory,p.projectCategory,p.status,authorsText(p.authors)].join(" ").toLowerCase();
+    const statusOk = (state.statusFilter==="All" || p.status===state.statusFilter);
+    const journalOk = (state.journalFilter==="All" || p.journalType===state.journalFilter || p.scopusCategory===state.journalFilter);
+    return text.includes(q) && statusOk && journalOk;
+  });
+}
+
+function filterInvoices(){
+  const q=state.query.toLowerCase();
+  return state.invoices.filter(i => [i.id,i.projectId,i.billTo,i.description,i.status].join(" ").toLowerCase().includes(q));
+}
+function filterReceipts(){
+  const q=state.query.toLowerCase();
+  return state.receipts.filter(r => [r.id,r.invoiceId,r.projectId,r.paidBy,r.method,r.reference].join(" ").toLowerCase().includes(q));
+}
+
+function shell(content){
+  const s = stats();
+  return `
+  <div class="app">
+    <aside class="sidebar no-print">
+      <div class="brand"><div class="logo">${esc(state.business.logoText || "JS")}</div><div><h1>${esc(state.business.businessName || "JSOrderLit Manager")}</h1><p>${esc(state.business.headerTagline || "Professional Project Management")}</p></div></div>
+      <div class="nav">
+        ${["Dashboard","Projects","Invoices","Receipts","Settings"].map(x=>`<button class="${state.active===x?'active':''}" onclick="go('${x}')">${icon(x)} ${x}</button>`).join("")}
+      </div>
+      <div class="profile"><p>System Owner</p><strong>${esc(state.business.ownerName || "Dr. Joko Slamet")}</strong><p>${esc(state.business.whatsapp ? "WhatsApp: " + state.business.whatsapp : "")}</p></div>
+    </aside>
+    <main class="main">
+      <div class="topbar no-print">
+        <div>
+          <div class="pill">📚 Professional Project Management</div>
+          <h2 class="page">${state.active}</h2>
+          <p class="subtitle">Manage professional project orders, clients, services, invoices, receipts, payment status, and document records in one integrated system.</p>
+        </div>
+        <div class="actions">
+          <button class="btn secondary" onclick='exportCSV("projects.csv", state.projects)'>⬇ Export Projects</button>
+          <button class="btn secondary" onclick='exportCSV("invoices.csv", state.invoices)'>⬇ Export Invoices</button>
+          <button class="btn" onclick="openNewProject()">＋ New Project</button>
+        </div>
+      </div>
+      <div class="grid4 no-print">
+        ${stat("Project Orders", state.projects.length, "Total article projects recorded")}
+        ${stat("Project Value", money(s.totalProject), "Estimated total service value")}
+        ${stat("Invoiced", money(s.invoiced), "Total invoice value issued")}
+        ${stat("Received", money(s.paid), "Outstanding: "+money(s.outstanding))}
+      </div>
+      ${content}
+    </main>
+  </div>
+  ${drawerHTML()}
+  ${previewHTML()}
+  `;
+}
+function icon(x){
+  return ({Dashboard:"⌂",Projects:"▣",Invoices:"▤",Receipts:"▥",Settings:"⚙"})[x] || "•";
+}
+function stat(t,v,sub){ return `<div class="card pad stat"><p>${t}</p><h3>${v}</h3><small>${sub}</small></div>`; }
+function empty(title, desc){ return `<div class="empty"><strong>${title}</strong>${desc}</div>`; }
+function toolbar(){
+  return `<div class="card toolbar no-print">
+    <input value="${esc(state.query)}" oninput="state.query=this.value;render()" placeholder="Search data by ID, title, author, journal, client, invoice, or receipt" />
+    <select onchange="state.statusFilter=this.value;render()"><option>All</option>${projectStatuses.map(x=>`<option ${state.statusFilter===x?'selected':''}>${x}</option>`).join("")}</select>
+    <select onchange="state.journalFilter=this.value;render()"><option>All</option>${journalTypes.map(x=>`<option ${state.journalFilter===x?'selected':''}>${x}</option>`).join("")}</select>
+  </div>`;
+}
+function dashboard(){
+  const recent = filterProjects().slice(0,5);
+  return `<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
+    <div class="card pad">
+      <h3 style="margin-top:0">Operational Overview</h3>
+      ${recent.length?projectTable(recent,true):empty("No project order has been added","Start by creating your first article project order. The dashboard will update automatically.")}
+    </div>
+    <div class="card pad">
+      <h3 style="margin-top:0">Fast Actions</h3>
+      <button class="btn" style="width:100%;justify-content:flex-start;margin-bottom:10px" onclick="openNewProject()">＋ Add Project Order</button>
+      <button class="btn secondary" style="width:100%;justify-content:flex-start;margin-bottom:10px" onclick="openNewInvoice()">▤ Create Invoice</button>
+      <button class="btn secondary" style="width:100%;justify-content:flex-start" onclick="openNewReceipt()">▥ Create Receipt</button>
+      <div class="footer-note">Invoices and receipts are automatically connected to project data. This no-API-key version stores data permanently in your browser using localStorage.</div>
+    </div>
+  </div>`;
+}
+function projectTable(rows, compact=false){
+  if(!rows.length) return empty("No project orders found","There are no project orders yet or no data matches your filters.");
+  return `<div class="card ${compact?'':'table-wrap'}"><div class="table-wrap"><table><thead><tr><th>Order ID</th><th>Date</th><th>Project Details</th><th>Lead</th><th>Journal</th><th>Project Fee</th><th>Invoice & Receipt</th><th>Status</th><th>Action</th></tr></thead><tbody>
+  ${rows.map(p=>{
+    const projectInvoices = state.invoices.filter(i => i.projectId === p.id);
+    const invoiced = projectInvoices.reduce((s,i)=>s+Number(i.total||0),0);
+    const invoiceIds = projectInvoices.map(i=>i.id);
+    const paid = state.receipts.filter(r => r.projectId === p.id || invoiceIds.includes(r.invoiceId)).reduce((s,r)=>s+Number(r.amount||0),0);
+    const balance = invoiced > 0 ? invoiced - paid : Number(p.price||0) - paid;
+    const payStatus = paid <= 0 ? "Unpaid" : balance > 0 ? "Partially Paid" : "Paid";
+    return `<tr>
+    <td><strong>${esc(p.id)}</strong></td>
+    <td>${esc(p.orderDate)}${p.deadline?`<br><small>Due: ${esc(p.deadline)}</small>`:""}</td>
+    <td><strong>${esc(p.title)}</strong><br><small>Category: ${esc(p.projectCategory || "Journal Article")}</small><br><small>Authors: ${esc(authorsText(p.authors))}</small><br><small>Corresponding: ${esc(p.correspondingAuthor||"-")}</small>${["Rejected","Resubmit"].includes(p.status)?`<br><small style="color:#b91c1c">Resubmit to: ${esc(p.resubmitTo||"not specified")}</small>`:""}</td>
+    <td>${esc(p.leadOrder)}<br><small>${esc(p.paymentTerm)}</small></td>
+    <td><strong>${esc(p.journalType)}</strong><br><small>${esc(p.targetJournal)}</small></td>
+    <td><strong>${money(p.price)}</strong></td>
+    <td>
+      <strong>Invoiced: ${money(invoiced)}</strong><br>
+      <small>Paid: ${money(paid)}</small><br>
+      <small>Balance: ${money(balance)}</small><br>
+      ${badge(payStatus)}
+    </td>
+    <td>${badge(p.status)}</td>
+    <td>
+      <button class="btn small secondary" onclick='quickInvoice("${esc(p.id)}")'>Invoice</button>
+      <button class="btn small secondary" onclick='quickReceipt("${esc(p.id)}")'>Receipt</button>
+      <button class="btn small secondary" onclick='openDrawer("project", ${JSON.stringify(p)})'>Edit</button>
+      <button class="btn small danger" onclick='removeItem("projects","${esc(p.id)}")'>Delete</button>
+    </td>
+  </tr>`}).join("")}</tbody></table></div></div>`;
+}
+function projectsPage(){ return toolbar()+projectTable(filterProjects()); }
+
+function invoicesPage(){
+  const rows=filterInvoices();
+  return `<div class="card pad no-print" style="margin-bottom:20px;display:flex;gap:12px;justify-content:space-between;align-items:center">
+    <input style="max-width:520px" value="${esc(state.query)}" oninput="state.query=this.value;render()" placeholder="Search invoice" />
+    <button class="btn" onclick="openNewInvoice()">＋ New Invoice</button>
+  </div>
+  ${rows.length?`<div class="card table-wrap"><table><thead><tr><th>Invoice</th><th>Dates</th><th>Client</th><th>Project</th><th>Total</th><th>Paid</th><th>Status</th><th>Action</th></tr></thead><tbody>${rows.map(i=>{
+    const paid=state.receipts.filter(r=>r.invoiceId===i.id).reduce((s,r)=>s+Number(r.amount||0),0);
+    return `<tr><td><strong>${esc(i.id)}</strong></td><td>Issued: ${esc(i.issueDate)}<br><small>Due: ${esc(i.dueDate||"-")}</small><br>${dueBadge(i.dueDate, i.status)}</td><td><strong>${esc(i.billTo)}</strong></td><td>${esc(i.projectId||"-")}<br><small>${esc(i.description)}</small></td><td><strong>${money(i.total)}</strong></td><td>${money(paid)}</td><td>${badge(i.status)}</td><td><button class="btn small secondary" onclick='openPreview("invoice", ${JSON.stringify(i)})'>View</button> <button class="btn small secondary" onclick='openDrawer("invoice", ${JSON.stringify(i)})'>Edit</button> <button class="btn small danger" onclick='removeItem("invoices","${esc(i.id)}")'>Delete</button></td></tr>`
+  }).join("")}</tbody></table></div>`:empty("No invoices yet","Create your first invoice or adjust your search keyword.")}`;
+}
+function receiptsPage(){
+  const rows=filterReceipts();
+  return `<div class="card pad no-print" style="margin-bottom:20px;display:flex;gap:12px;justify-content:space-between;align-items:center">
+    <input style="max-width:520px" value="${esc(state.query)}" oninput="state.query=this.value;render()" placeholder="Search receipt" />
+    <button class="btn" onclick="openNewReceipt()">＋ New Receipt</button>
+  </div>
+  ${rows.length?`<div class="card table-wrap"><table><thead><tr><th>Receipt</th><th>Date</th><th>Paid By</th><th>Linked Invoice</th><th>Method</th><th>Amount</th><th>Action</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong>${esc(r.id)}</strong></td><td>${esc(r.paymentDate)}</td><td><strong>${esc(r.paidBy)}</strong></td><td>${esc(r.invoiceId||"-")}<br><small>Project: ${esc(r.projectId||"-")}</small></td><td>${esc(r.method)}<br><small>${esc(r.reference||"No reference")}</small></td><td><strong>${money(r.amount)}</strong></td><td><button class="btn small secondary" onclick='openPreview("receipt", ${JSON.stringify(r)})'>View</button> <button class="btn small secondary" onclick='openDrawer("receipt", ${JSON.stringify(r)})'>Edit</button> <button class="btn small danger" onclick='removeItem("receipts","${esc(r.id)}")'>Delete</button></td></tr>`).join("")}</tbody></table></div>`:empty("No receipts yet","Create receipts after payment is received.")}`;
+}
+
+function fileToDataUrl(file, callback) {
+  if(!file) { callback(""); return; }
+  const reader = new FileReader();
+  reader.onload = () => callback(reader.result);
+  reader.readAsDataURL(file);
+}
+
+function saveBusinessSettingsWithFiles(form, data) {
+  const logoFile = form.logoImageFile && form.logoImageFile.files ? form.logoImageFile.files[0] : null;
+  const sigFile = form.signatureImageFile && form.signatureImageFile.files ? form.signatureImageFile.files[0] : null;
+  fileToDataUrl(logoFile, (logoData) => {
+    fileToDataUrl(sigFile, (sigData) => {
+      if(logoData) data.logoImage = logoData;
+      if(sigData) data.signatureImage = sigData;
+      state.business = Object.assign({}, state.business, data, {_version: APP_VERSION});
+      save();
+      alert("Business profile, logo, signature, currency, bank, and reminder settings saved successfully.");
+      render();
+    });
+  });
+}
+
+function saveBusinessSettings(e){
+  e.preventDefault();
+  const data = formData(e);
+  delete data.logoImageFile;
+  delete data.signatureImageFile;
+  saveBusinessSettingsWithFiles(e.target, data);
+}
+
+function settingsPage(){
+  const b = state.business || defaultBusiness;
+  return `<div class="card pad">
+    <h3 style="margin-top:0">Automatic Professional Document Settings</h3>
+    <p class="note">Your WA, email, bank accounts, currency, logo, and signature have been set automatically. You may still update them below when needed.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0">
+      <div class="doc-meta-box">
+        <div class="mini-label">Contact</div>
+        <p class="note" style="margin:6px 0 0"><strong>WhatsApp:</strong> ${esc(b.whatsapp)}<br><strong>Email:</strong> ${esc(b.email)}</p>
+      </div>
+      <div class="doc-meta-box">
+        <div class="mini-label">BCA</div>
+        <p class="note" style="margin:6px 0 0"><strong>${esc(b.accountNumber)}</strong><br>a.n. ${esc(b.accountHolder)}</p>
+      </div>
+      <div class="doc-meta-box">
+        <div class="mini-label">Mandiri</div>
+        <p class="note" style="margin:6px 0 0"><strong>${esc(b.accountNumber2)}</strong><br>a.n. ${esc(b.accountHolder2)}</p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:160px 1fr;gap:18px;align-items:center;margin-bottom:18px">
+      <div class="doc-meta-box" style="text-align:center">
+        <img class="logo-img" style="width:92px;height:92px" src="${b.logoImage || logoData(b.logoText)}" alt="Automatic Logo Image">
+        <p class="note" style="margin:8px 0 0">Automatic logo image</p>
+      </div>
+      <div class="doc-meta-box">
+        <div class="mini-label">Automatic Signature Image</div>
+        <img class="sig-img" style="margin:8px 0 0 0" src="${b.signatureImage || signatureData(b.signatureName || b.ownerName)}" alt="Automatic Signature Image">
+        <p class="note" style="margin:6px 0 0">${esc(b.ownerName)}</p>
+      </div>
+    </div>
+
+    <form class="form-grid" onsubmit="saveBusinessSettings(event)" style="margin-top:16px">
+      <input name="businessName" value="${val(b,'businessName')}" placeholder="Business / Brand Name">
+      <input name="logoText" value="${val(b,'logoText')}" placeholder="Logo Text if no image is uploaded">
+      <input class="span2" name="headerTagline" value="${val(b,'headerTagline')}" placeholder="Header Tagline">
+      <input name="ownerName" value="${val(b,'ownerName')}" placeholder="Owner / Authorized Name">
+      <input name="signatureName" value="${val(b,'signatureName')}" placeholder="Signature Name">
+      <input class="span2" name="address" value="${val(b,'address')}" placeholder="Business Address">
+      <input name="whatsapp" value="${val(b,'whatsapp')}" placeholder="WhatsApp Contact">
+      <input name="email" value="${val(b,'email')}" placeholder="Email Contact">
+      <select name="currency">
+        ${["IDR","USD","EUR","GBP","SGD","MYR","JPY"].map(c=>`<option value="${c}" ${b.currency===c?'selected':''}>${c}</option>`).join("")}
+      </select>
+      <input name="dueSoonDays" type="number" value="${val(b,'dueSoonDays','7')}" placeholder="Due Reminder Days">
+      <input name="bankName" value="${val(b,'bankName')}" placeholder="Bank 1 Name">
+      <input name="accountNumber" value="${val(b,'accountNumber')}" placeholder="Bank 1 Account Number">
+      <input class="span2" name="accountHolder" value="${val(b,'accountHolder')}" placeholder="Bank 1 Account Holder Name">
+      <input name="bankName2" value="${val(b,'bankName2')}" placeholder="Bank 2 Name">
+      <input name="accountNumber2" value="${val(b,'accountNumber2')}" placeholder="Bank 2 Account Number">
+      <input class="span2" name="accountHolder2" value="${val(b,'accountHolder2')}" placeholder="Bank 2 Account Holder Name">
+      <div class="span2 doc-meta-box">
+        <div class="mini-label">Optional Company Logo Image Upload</div>
+        <input name="logoImageFile" type="file" accept="image/*">
+        <p class="note" style="margin:8px 0 0">Upload PNG/JPG logo if you want to replace the automatic JS logo.</p>
+      </div>
+      <div class="span2 doc-meta-box">
+        <div class="mini-label">Optional Actual PNG Signature Upload</div>
+        <input name="signatureImageFile" type="file" accept="image/png,image/jpeg,image/webp">
+        <p class="note" style="margin:8px 0 0">Upload transparent PNG signature if available. Otherwise, the app uses the automatic signature image.</p>
+      </div>
+      <div class="span2" style="display:flex;justify-content:flex-end;gap:10px">
+        <button class="btn">Save Professional Settings</button>
+      </div>
+    </form>
+  </div>`;
+}
+
+function drawerHTML(){
+  if(!state.drawer) return "";
+  const title = state.drawer==="project" ? (state.editItem?"Edit Project Order":"Create Project Order") : state.drawer==="invoice" ? (state.editItem?"Edit Invoice":"Create Invoice") : (state.editItem?"Edit Receipt":"Create Receipt");
+  const form = state.drawer==="project" ? projectForm() : state.drawer==="invoice" ? invoiceForm() : receiptForm();
+  return `<div class="drawer-bg show no-print"><div class="drawer"><div class="drawer-head"><div><h3>${title}</h3><p>Complete the form and save your data.</p></div><button class="btn secondary small" onclick="closeDrawer()">✕</button></div><div class="drawer-body">${form}</div></div></div>`;
+}
+function val(obj,k,def=""){ return esc((obj&&obj[k]!==undefined)?obj[k]:def); }
+function projectForm(){
+  const p = state.editItem || {};
+  const defaultDate = val(p,"orderDate",today());
+  return `<form class="form-grid" onsubmit="saveProjectForm(event)">
+    <input name="id" value="${val(p,'id', projectOrderId(defaultDate))}" placeholder="Automatic Project Reference" readonly>
+    <input name="orderDate" type="date" value="${defaultDate}" onchange="refreshProjectIdByDate(this)">
+    <input class="span2" name="title" value="${val(p,'title')}" placeholder="Project / Manuscript / Editing Title" required>
+    <select name="projectCategory">
+      ${projectCategories.map(x=>`<option ${p.projectCategory===x?'selected':''}>${x}</option>`).join("")}
+    </select>
+    <input name="leadOrder" value="${val(p,'leadOrder')}" placeholder="Lead Order / Client Name" required>
+    <input class="span2" name="clientAddress" value="${val(p,'clientAddress')}" placeholder="Client Address / Institution / Affiliation">
+    <input name="correspondingAuthor" value="${val(p,'correspondingAuthor')}" placeholder="Corresponding Author / Main Contact">
+    <input name="authors" value="${esc(authorsText(p.authors) === '-' ? '' : authorsText(p.authors))}" placeholder="Authors / Team Members, separated by comma">
+    <select name="scopusCategory">
+      ${["Q1","Q2","Q3","Q4","Non-Scopus","Not Applicable"].map(x=>`<option ${p.scopusCategory===x?'selected':''}>${x}</option>`).join("")}
+    </select>
+    <input name="journal" value="${val(p,'journal')}" placeholder="Target Journal / Publisher / Destination / Service Note">
+    <input name="price" type="number" value="${val(p,'price')}" placeholder="Project Fee">
+    <select name="paymentTerm">
+      ${["Full Payment","50% Down Payment","Installment","After Accepted","After Completed","Custom"].map(x=>`<option ${p.paymentTerm===x?'selected':''}>${x}</option>`).join("")}
+    </select>
+    <select name="status">
+      ${["Draft","In Progress","Submitted","Under Review","Revision","Rejected","Resubmit after Reject","Accepted","Completed","Cancelled"].map(x=>`<option ${p.status===x?'selected':''}>${x}</option>`).join("")}
+    </select>
+    <input name="deadline" type="date" value="${val(p,'deadline')}">
+    <input name="resubmitTo" value="${val(p,'resubmitTo')}" placeholder="Resubmit To / Next Target">
+    <textarea class="span2" name="notes" placeholder="Notes, service scope, revision plan, or special instruction">${val(p,'notes')}</textarea>
+    <div class="span2 doc-meta-box">
+      <div class="mini-label">Automatic Reference Format</div>
+      <p class="note" style="margin:6px 0 0"><strong>JS-ORD-MONTH-YEAR-SEQUENCE</strong>, for example <strong>JS-ORD-6-2026-0003</strong> means the 3rd order in June 2026.</p>
+    </div>
+    <div class="span2" style="display:flex;justify-content:flex-end;gap:10px">
+      <button type="button" class="btn secondary" onclick="closeDrawer()">Cancel</button>
+      <button class="btn">Save Project</button>
+    </div>
+  </form>`;
+}
+
+function invoiceForm(){
+  const i=state.editItem||{};
+  return `<form class="form-grid" onsubmit="saveInvoiceForm(event)">
+    <input name="id" value="${val(i,'id',invoiceId())}" placeholder="Invoice Number" required>
+    <select name="projectId" onchange="fillInvoiceProject(this.value)"><option value="">Select Project Order</option>${state.projects.map(p=>`<option value="${esc(p.id)}" ${i.projectId===p.id?'selected':''}>${esc(p.id)} - ${esc(p.title)}</option>`).join("")}</select>
+    <input name="issueDate" type="date" value="${val(i,'issueDate',new Date().toISOString().slice(0,10))}">
+    <input name="dueDate" type="date" value="${val(i,'dueDate')}">
+    <input name="billTo" value="${val(i,'billTo')}" placeholder="Bill To / Client" required>
+    <input name="clientAddress" value="${val(i,'clientAddress')}" placeholder="Client Address">
+    <select name="status">${invoiceStatuses.map(x=>`<option ${i.status===x?'selected':''}>${x}</option>`).join("")}</select>
+    <textarea class="span2" name="description" placeholder="Invoice Description" required>${val(i,'description')}</textarea>
+    <input name="amount" type="number" value="${val(i,'amount')}" placeholder="Amount" oninput="calcInvoiceTotal()">
+    <input name="discount" type="number" value="${val(i,'discount')}" placeholder="Discount" oninput="calcInvoiceTotal()">
+    <input name="tax" type="number" value="${val(i,'tax')}" placeholder="Tax / Admin Fee" oninput="calcInvoiceTotal()">
+    <div class="card pad"><small>Invoice Total</small><h3 id="invoiceTotal">${money((Number(i.amount||0)-Number(i.discount||0)+Number(i.tax||0)))}</h3></div>
+    <textarea class="span2" name="notes" placeholder="Invoice notes">${val(i,'notes')}</textarea>
+    <div class="span2" style="display:flex;justify-content:flex-end;gap:10px"><button type="button" class="btn secondary" onclick="closeDrawer()">Cancel</button><button class="btn">Save Invoice</button></div>
+  </form>`;
+}
+function receiptForm(){
+  const r=state.editItem||{};
+  return `<form class="form-grid" onsubmit="saveReceiptForm(event)">
+    <input name="id" value="${val(r,'id',receiptId())}" placeholder="Receipt Number" required>
+    <select name="invoiceId" onchange="fillReceiptInvoice(this.value)"><option value="">Select Invoice</option>${state.invoices.map(i=>`<option value="${esc(i.id)}" ${r.invoiceId===i.id?'selected':''}>${esc(i.id)} - ${esc(i.billTo)}</option>`).join("")}</select>
+    <select name="projectId"><option value="">Select Project Order</option>${state.projects.map(p=>`<option value="${esc(p.id)}" ${r.projectId===p.id?'selected':''}>${esc(p.id)} - ${esc(p.title)}</option>`).join("")}</select>
+    <input name="paymentDate" type="date" value="${val(r,'paymentDate',new Date().toISOString().slice(0,10))}">
+    <input name="paidBy" value="${val(r,'paidBy')}" placeholder="Paid By" required>
+    <input name="amount" type="number" value="${val(r,'amount')}" placeholder="Paid Amount" required>
+    <select name="method">${receiptMethods.map(x=>`<option ${r.method===x?'selected':''}>${x}</option>`).join("")}</select>
+    <input name="reference" value="${val(r,'reference')}" placeholder="Transfer Reference / Transaction ID">
+    <input class="span2" name="receivedBy" value="${val(r,'receivedBy','Dr. Joko Slamet')}" placeholder="Received By">
+    <textarea class="span2" name="notes" placeholder="Receipt notes">${val(r,'notes')}</textarea>
+    <div class="span2" style="display:flex;justify-content:flex-end;gap:10px"><button type="button" class="btn secondary" onclick="closeDrawer()">Cancel</button><button class="btn">Save Receipt</button></div>
+  </form>`;
+}
+function formData(e){ const fd=new FormData(e.target); return Object.fromEntries(fd.entries()); }
+function saveProjectForm(e){
+  e.preventDefault();
+  const x = ensureProjectDefaults(formData(e));
+  if(!x.id) x.id = projectOrderId(x.orderDate);
+  const ix = state.projects.findIndex(p => p.id === x.id);
+  if(ix >= 0) state.projects[ix] = Object.assign({}, state.projects[ix], x);
+  else state.projects.unshift(x);
+  save();
+  closeDrawer();
+}
+
+function saveInvoiceForm(e){
+  e.preventDefault(); const x=formData(e); x.amount=Number(x.amount||0); x.discount=Number(x.discount||0); x.tax=Number(x.tax||0); x.total=x.amount-x.discount+x.tax;
+  const ix=state.invoices.findIndex(i=>i.id===x.id); if(ix>=0) state.invoices[ix]=x; else state.invoices.unshift(x);
+  save(); closeDrawer();
+}
+function saveReceiptForm(e){
+  e.preventDefault(); const x=formData(e); x.amount=Number(x.amount||0);
+  const inv=state.invoices.find(i=>i.id===x.invoiceId);
+  if(inv && !x.projectId) x.projectId = inv.projectId || "";
+  const ix=state.receipts.findIndex(r=>r.id===x.id); if(ix>=0) state.receipts[ix]=x; else state.receipts.unshift(x);
+  if(inv){
+    const paid=state.receipts.filter(r=>r.invoiceId===inv.id || (inv.projectId && r.projectId===inv.projectId)).reduce((s,r)=>s+Number(r.amount||0),0);
+    inv.status = paid >= Number(inv.total||0) ? "Paid" : paid > 0 ? "Partially Paid" : inv.status;
+  }
+  save(); closeDrawer();
+}
+function fillInvoiceProject(pid){
+  const p=state.projects.find(x=>x.id===pid); if(!p) return;
+  const f=document.querySelector(".drawer form"); f.billTo.value=p.leadOrder||""; if(f.clientAddress) f.clientAddress.value=p.clientAddress||""; f.description.value=`${p.projectCategory || "Journal Article"} - ${p.title || ""}`; f.amount.value=p.price||0; calcInvoiceTotal();
+}
+function calcInvoiceTotal(){
+  const f=document.querySelector(".drawer form"); if(!f) return;
+  const total=Number(f.amount.value||0)-Number(f.discount.value||0)+Number(f.tax.value||0);
+  const el=document.getElementById("invoiceTotal"); if(el) el.textContent=money(total);
+}
+function fillReceiptInvoice(iid){
+  const inv=state.invoices.find(x=>x.id===iid); if(!inv) return;
+  const f=document.querySelector(".drawer form"); f.projectId.value=inv.projectId||""; f.paidBy.value=inv.billTo||""; f.amount.value=inv.total||inv.amount||0;
+}
+
+function quickInvoice(projectId){
+  const p = state.projects.find(x=>x.id===projectId);
+  if(!p) return;
+  const existing = state.invoices.find(i=>i.projectId===projectId);
+  if(existing){
+    openPreview("invoice", existing);
+    return;
+  }
+  const inv = {
+    id: invoiceId(),
+    projectId: p.id,
+    issueDate: new Date().toISOString().slice(0,10),
+    dueDate: new Date(Date.now() + Number((state.business && state.business.dueSoonDays) || 7) * 86400000).toISOString().slice(0,10),
+    billTo: p.leadOrder || "",
+    clientAddress: p.clientAddress || "",
+    description: `${p.projectCategory || "Journal Article"} - ${p.title || ""}`,
+    amount: Number(p.price||0),
+    discount: 0,
+    tax: 0,
+    total: Number(p.price||0),
+    status: "Issued",
+    notes: "Automatically generated from project order data."
+  };
+  state.invoices.unshift(inv);
+  save();
+  openPreview("invoice", inv);
+}
+function quickReceipt(projectId){
+  const p = state.projects.find(x=>x.id===projectId);
+  if(!p) return;
+  const projectInvoices = state.invoices.filter(i=>i.projectId===projectId);
+  let inv = projectInvoices[0];
+  if(!inv){
+    inv = {
+      id: invoiceId(),
+      projectId: p.id,
+      issueDate: new Date().toISOString().slice(0,10),
+      dueDate: new Date(Date.now() + Number((state.business && state.business.dueSoonDays) || 7) * 86400000).toISOString().slice(0,10),
+      billTo: p.leadOrder || "",
+      clientAddress: p.clientAddress || "",
+      description: `${p.projectCategory || "Journal Article"} - ${p.title || ""}`,
+      amount: Number(p.price||0),
+      discount: 0,
+      tax: 0,
+      total: Number(p.price||0),
+      status: "Issued",
+      notes: "Automatically generated before receipt creation."
+    };
+    state.invoices.unshift(inv);
+    save();
+  }
+  const paid = state.receipts.filter(r=>r.invoiceId===inv.id || r.projectId===projectId).reduce((s,r)=>s+Number(r.amount||0),0);
+  const balance = Number(inv.total||0) - paid;
+  state.editItem = {
+    id: receiptId(),
+    invoiceId: inv.id,
+    projectId: p.id,
+    paymentDate: new Date().toISOString().slice(0,10),
+    paidBy: inv.billTo || p.leadOrder || "",
+    amount: balance > 0 ? balance : Number(inv.total||p.price||0),
+    method: "Bank Transfer",
+    reference: "",
+    receivedBy: "Dr. Joko Slamet",
+    notes: "Payment recorded from project order data."
+  };
+  state.drawer = "receipt";
+  render();
+}
+
+
+function downloadPreviewPDF(){
+  if(!state.preview) return;
+  const area = document.getElementById("printArea");
+  if(!area || typeof html2pdf === "undefined"){
+    alert("PDF library is loading. Please wait a moment and try again.");
+    return;
+  }
+  const type = state.preview.type === "invoice" ? "Invoice" : "Receipt";
+  const fileName = `${type}_${state.preview.item.id}.pdf`;
+  const opt = {
+    margin: 0,
+    filename: fileName,
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    pagebreak: { mode: ["avoid-all", "css", "legacy"] }
+  };
+  html2pdf().set(opt).from(area).save();
+}
+
+function previewHTML(){
+  if(!state.preview) return "";
+  const {type,item}=state.preview;
+  const project=state.projects.find(p=>p.id===item.projectId) || {};
+  const title=type==="invoice"?"INVOICE":"OFFICIAL RECEIPT";
+  const date=type==="invoice"?item.issueDate:item.paymentDate;
+  const client=type==="invoice"?item.billTo:item.paidBy;
+  const amount=type==="invoice"?item.total:item.amount;
+  const clientAddress = item.clientAddress || project.clientAddress || "-";
+  const stampLabel = type==="invoice" ? "ISSUED" : "PAID";
+  const stampClass = type==="invoice" ? "" : " red";
+  const watermark = type==="invoice" ? "INVOICE" : "PAID";
+  const stampDate = type==="invoice" ? item.issueDate : item.paymentDate;
+  const b = state.business || defaultBusiness;
+  const logoHTML = `<img class="logo-img" src="${b.logoImage || logoData(b.logoText || "JS")}" alt="Company Logo" />`;
+  const signatureHTML = `<img class="sig-img" src="${defaultBusiness.signatureImage || b.signatureImage || signatureData(b.signatureName || b.ownerName || "Dr. Joko Slamet")}" alt="Authorized Signature" />`;
+  const dueInfo = type==="invoice" && item.dueDate ? `<br>Due Date: ${esc(item.dueDate)} ${dueBadge(item.dueDate, item.status)}` : "";
+  return `<div class="drawer-bg show"><div class="drawer"><div class="drawer-head no-print"><div><h3>${title} Preview</h3><p>Formal A4 preview, print, download PDF, or close this document.</p></div><div><button class="btn secondary small" onclick="downloadPreviewPDF()">Download PDF</button> <button class="btn secondary small" onclick="window.print()">Print</button> <button class="btn secondary small" onclick="closePreview()">✕</button></div></div><div class="drawer-body"><div id="printArea"><div class="doc a4-doc">
+    <div class="formal-top"></div>
+    <div class="watermark">${watermark}</div>
+    <div class="doc-head">
+      <div class="header-flex">
+        ${logoHTML}
+        <div>
+          <div class="formal-ribbon">${esc(b.headerTagline || "Professional Document")}</div>
+          <h2 style="margin:8px 0 0;color:#0f172a">${esc(b.businessName || "JSOrderLit Manager")}</h2>
+          <p class="note" style="margin:4px 0 0">${esc(b.address || "")}</p>
+          <p class="contact-line">${b.whatsapp ? `WhatsApp: ${esc(b.whatsapp)}` : ""}${b.email ? `${b.whatsapp ? " | " : ""}Email: ${esc(b.email)}` : ""}</p>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="doc-title" style="color:#1d4ed8">${title}</div>
+        <div class="gold-line"></div>
+        <div class="doc-meta-box">
+          <p class="note" style="margin:0">No: ${esc(item.id)}<br>Date: ${esc(date)}${dueInfo}</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px">
+      <div class="doc-meta-box">
+        <div class="mini-label">Bill To / Client</div>
+        <h3 style="margin:6px 0 0">${esc(client)}</h3>
+        <p class="note" style="margin:6px 0 0">${esc(clientAddress)}</p>
+      </div>
+      <div class="doc-meta-box">
+        <div class="mini-label">Project Reference</div>
+        <h3 style="margin:6px 0 0">${esc(item.projectId||"-")}</h3>
+        <p class="note" style="margin:6px 0 0">${esc(project.title||item.description||"-")}<br><strong>Category:</strong> ${esc(project.projectCategory || "Journal Article")}</p>
+      </div>
+    </div>
+
+    <div class="doc-table">
+      <table>
+        <thead><tr><th>Description</th><th style="text-align:right">Amount (${esc(activeCurrency())})</th></tr></thead>
+        <tbody>
+          <tr><td>${type==="invoice"?esc(item.description):`Payment received via ${esc(item.method)} ${item.reference?`, reference ${esc(item.reference)}`:""}`}</td><td style="text-align:right"><strong>${money(amount)}</strong></td></tr>
+          ${type==="invoice"?`<tr><td style="text-align:right">Discount</td><td style="text-align:right">${money(item.discount)}</td></tr><tr><td style="text-align:right">Tax/Admin Fee</td><td style="text-align:right">${money(item.tax)}</td></tr>`:""}
+        </tbody>
+        <tfoot><tr><td style="text-align:right"><strong>TOTAL</strong></td><td style="text-align:right"><strong>${money(amount)}</strong></td></tr></tfoot>
+      </table>
+    </div>
+
+    <div class="bank-box">
+      <div class="mini-label">Bank Account & Payment Contact</div>
+      <p class="note" style="margin:6px 0 0">
+        <strong>${esc(b.bankName || "Bank")}:</strong> ${esc(b.accountNumber || "-")} a.n. ${esc(b.accountHolder || "-")}<br>
+        <strong>${esc(b.bankName2 || "Bank 2")}:</strong> ${esc(b.accountNumber2 || "-")} a.n. ${esc(b.accountHolder2 || "-")}<br>
+        ${b.whatsapp ? `<strong>WhatsApp Confirmation:</strong> ${esc(b.whatsapp)}` : ""}
+      </p>
+    </div>
+
+    
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:30px">
+      <div>
+        <small>Notes</small>
+        <p class="note">${esc(item.notes||"-")}</p>
+      </div>
+      <div style="text-align:right">
+        <p class="note" style="margin-bottom:8px">Authorized Signature</p>
+        ${signatureHTML}
+        <strong>${esc(b.ownerName || "Dr. Joko Slamet")}</strong>
+      </div>
+    </div>
+    <div class="formal-footer">
+      <span>${esc(b.businessName || "JSOrderLit Manager")}</span>
+      <span>${esc(b.email || "")}${b.whatsapp ? " | " + esc(b.whatsapp) : ""}</span>
+    </div>
+  </div></div></div></div>`;
+}
+function render(){
+  let content = state.active==="Dashboard" ? dashboard() : state.active==="Projects" ? projectsPage() : state.active==="Invoices" ? invoicesPage() : state.active==="Receipts" ? receiptsPage() : settingsPage();
+  document.getElementById("app").innerHTML = shell(content);
+}
+render();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</body>
+</html>
